@@ -1,11 +1,18 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Mobile Navigation
+    // DOM Elements
     const burger = document.querySelector('.burger');
     const nav = document.querySelector('.nav-links');
     const navLinks = document.querySelectorAll('.nav-links li');
+    const body = document.body;
+    const skillItems = document.querySelectorAll('.skill-item');
+    const contactForm = document.getElementById('contact-form');
 
-    burger?.addEventListener('click', () => {
+    // Mobile Navigation Functions
+    const toggleNavigation = () => {
         nav.classList.toggle('nav-active');
+        body.style.overflow = nav.classList.contains('nav-active') ? 'hidden' : '';
+        
+        // Animate Links
         navLinks.forEach((link, index) => {
             if (link.style.animation) {
                 link.style.animation = '';
@@ -13,12 +20,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 link.style.animation = `navLinkFade 0.5s ease forwards ${index / 7 + 0.3}s`;
             }
         });
+        
+        // Toggle Burger Animation
         burger.classList.toggle('toggle');
-    });
+    };
 
-    // Skills Animation
-    const skillItems = document.querySelectorAll('.skill-item');
-    
+    const closeNavigation = () => {
+        nav.classList.remove('nav-active');
+        burger.classList.remove('toggle');
+        body.style.overflow = '';
+        navLinks.forEach(link => {
+            link.style.animation = '';
+        });
+    };
+
+    // Skills Animation Functions
     const initializeSkills = () => {
         skillItems.forEach(item => {
             const percent = item.getAttribute('data-percent');
@@ -33,13 +49,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // Set custom properties
             progress.style.setProperty('--percent', `${percent}%`);
             progress.setAttribute('data-tooltip', `${level} - ${percent}%`);
-            
-            // Add color class based on level
             item.classList.add(`skill-level-${Math.floor(percent / 10) * 10}`);
         });
     };
 
-    // Intersection Observer for scroll animations
     const observeSkills = () => {
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -53,11 +66,9 @@ document.addEventListener('DOMContentLoaded', function() {
         skillItems.forEach(skill => observer.observe(skill));
     };
 
-    // Contact Form Handling
-    const contactForm = document.getElementById('contact-form');
-    contactForm?.addEventListener('submit', async (e) => {
+     // Contact Form Handler
+    const handleContactSubmit = async (e) => {
         e.preventDefault();
-        
         const formData = new FormData(contactForm);
         const submitButton = contactForm.querySelector('.submit-button');
         
@@ -65,20 +76,61 @@ document.addEventListener('DOMContentLoaded', function() {
             submitButton.disabled = true;
             submitButton.textContent = 'Sending...';
             
-            // Add your form submission logic here
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Simulated delay
+            // Simulated API call - Replace with your actual form submission
+            await new Promise(resolve => setTimeout(resolve, 1000));
             
             alert('Thank you for your message! I will get back to you soon.');
             contactForm.reset();
         } catch (error) {
+            console.error('Form submission error:', error);
             alert('There was an error sending your message. Please try again.');
         } finally {
             submitButton.disabled = false;
             submitButton.textContent = 'Send Message';
         }
+    };
+
+    // Event Listeners
+    burger?.addEventListener('click', toggleNavigation);
+    
+    navLinks.forEach(link => {
+        link.addEventListener('click', closeNavigation);
     });
 
-    // Initialize everything
+    document.addEventListener('click', (e) => {
+        if (nav.classList.contains('nav-active') && 
+            !nav.contains(e.target) && 
+            !burger.contains(e.target)) {
+            closeNavigation();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeNavigation();
+            closeModal();
+        }
+    });
+
+    contactForm?.addEventListener('submit', handleContactSubmit);
+
+    // Smooth Scroll for Navigation Links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+
+    // Initialize
     initializeSkills();
     observeSkills();
 });
